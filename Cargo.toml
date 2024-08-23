@@ -1,0 +1,15 @@
+[package]
+name = "habit_tracker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-std = "1.12.0"
+axum = "0.7.5"
+postgres ="0.19.8"
+serde = "1.0.209"
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres"] }
+tokio = { version = "1.39.3", features = ["full"] }
+tower = "0.5.0"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
