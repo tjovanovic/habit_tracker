@@ -51,7 +51,9 @@ async fn main() {
         .expect("can't connect to database");
 
     // build our application with some routes
-    let app = Router::new().route("/", get(root::get)).with_state(pool);
+    let app = Router::new()
+        .route("/", get(root::get).post(root::post))
+        .with_state(pool);
 
     // run it with hyper
     let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();

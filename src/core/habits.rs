@@ -1,15 +1,15 @@
 use std::vec::Vec;
 
 #[derive(PartialEq, Debug)]
-struct Habit {
-    name: String,
-    desired_week_days: Vec<WeekDay>,
+pub struct Habit {
+    pub name: String,
+    pub desired_week_days: Vec<WeekDay>,
     completed_week_days: Vec<WeekDay>,
-    habit_type: HabitType,
+    pub habit_type: HabitType,
 }
 
 #[derive(PartialEq, Debug)]
-enum WeekDay {
+pub enum WeekDay {
     Monday,
     Tuesday,
     Wednesday,
@@ -20,7 +20,7 @@ enum WeekDay {
 }
 
 #[derive(PartialEq, Debug)]
-enum HabitType {
+pub enum HabitType {
     Completed,
     Length(u16),
 }
@@ -35,10 +35,14 @@ impl Habit {
         }
     }
 
-    pub fn complete_day(&mut self, day: WeekDay) {
+    pub fn complete_day(&mut self, day: WeekDay) -> () {
         if !self.completed_week_days.contains(&day) {
             self.completed_week_days.push(day);
         }
+    }
+
+    pub fn is_complete(&self) -> bool {
+        self.completed_week_days.len() <= self.desired_week_days.len()
     }
 }
 
@@ -47,7 +51,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_adds_two() {
+    fn test_init() {
         let result = Habit::new(
             String::from("Test"),
             vec![WeekDay::Monday, WeekDay::Tuesday],
@@ -60,5 +64,17 @@ mod tests {
             habit_type: HabitType::Completed,
         };
         assert_eq!(result, expected_habit);
+    }
+
+    #[test]
+    fn test_completing() {
+        let mut result = Habit::new(
+            String::from("Test"),
+            vec![WeekDay::Monday, WeekDay::Tuesday],
+            HabitType::Completed,
+        );
+        result.complete_day(WeekDay::Monday);
+        result.complete_day(WeekDay::Tuesday);
+        assert_eq!(result.is_complete(), true);
     }
 }
