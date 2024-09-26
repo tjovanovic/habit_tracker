@@ -23,7 +23,7 @@ pub async fn post(
     let result = Habit::new(
         String::from("Test"),
         vec![WeekDay::Monday, WeekDay::Tuesday],
-        HabitType::Completed,
+        HabitType::O,
     );
     println!("{}", body);
     for (key, val) in params.into_iter() {

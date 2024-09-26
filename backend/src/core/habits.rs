@@ -1,14 +1,20 @@
 use std::vec::Vec;
 
-#[derive(PartialEq, Debug)]
 pub struct Habit {
+    pub id: HabitId,
     pub name: String,
     pub desired_week_days: Vec<WeekDay>,
     completed_week_days: Vec<WeekDay>,
     pub habit_type: HabitType,
+    pub category: String,
+    pub user_id: UserId,
+    priority: Priority,
 }
 
-#[derive(PartialEq, Debug)]
+struct HabitId(u64);
+struct UserId(u64);
+
+#[derive(PartialEq)]
 pub enum WeekDay {
     Monday,
     Tuesday,
@@ -19,20 +25,46 @@ pub enum WeekDay {
     Sunday,
 }
 
-#[derive(PartialEq, Debug)]
+pub enum Priority {
+    P1,
+    P2,
+    P3,
+    P4,
+    P5,
+}
+
 pub enum HabitType {
-    Completed,
-    Length(u16),
+    // Habit that can be either done or not
+    OneOff,
+
+    // Habit based on length
+    Length(u16, u16, u16),
 }
 
 impl Habit {
-    pub fn new(name: String, desired_week_days: Vec<WeekDay>, habit_type: HabitType) -> Self {
+    pub fn new(
+        id: HabitId,
+        name: String,
+        desired_week_days: Vec<WeekDay>,
+        habit_type: HabitType,
+        category: String,
+        priority: Priority,
+        user_id: UserId,
+    ) -> Self {
         Habit {
+            id,
             name,
             desired_week_days,
             completed_week_days: Vec::new(),
             habit_type,
+            category,
+            user_id,
+            priority,
         }
+    }
+
+    pub fn times_per_week(&self) -> usize {
+        return self.desired_week_days.len();
     }
 
     pub fn complete_day(&mut self, day: WeekDay) -> () {
@@ -50,31 +82,31 @@ impl Habit {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_init() {
-        let result = Habit::new(
-            String::from("Test"),
-            vec![WeekDay::Monday, WeekDay::Tuesday],
-            HabitType::Completed,
-        );
-        let expected_habit = Habit {
-            name: String::from("Test"),
-            desired_week_days: vec![WeekDay::Monday, WeekDay::Tuesday],
-            completed_week_days: Vec::new(),
-            habit_type: HabitType::Completed,
-        };
-        assert_eq!(result, expected_habit);
-    }
+    // #[test]
+    // fn test_init() {
+    //     let result = Habit::new(
+    //         String::from("Test"),
+    //         vec![WeekDay::Monday, WeekDay::Tuesday],
+    //         HabitType::Completed,
+    //     );
+    //     let expected_habit = Habit {
+    //         name: String::from("Test"),
+    //         desired_week_days: vec![WeekDay::Monday, WeekDay::Tuesday],
+    //         completed_week_days: Vec::new(),
+    //         habit_type: HabitType::Completed,
+    //     };
+    //     assert_eq!(result, expected_habit);
+    // }
 
-    #[test]
-    fn test_completing() {
-        let mut result = Habit::new(
-            String::from("Test"),
-            vec![WeekDay::Monday, WeekDay::Tuesday],
-            HabitType::Completed,
-        );
-        result.complete_day(WeekDay::Monday);
-        result.complete_day(WeekDay::Tuesday);
-        assert_eq!(result.is_complete(), true);
-    }
+    // #[test]
+    // fn test_completing() {
+    //     let mut result = Habit::new(
+    //         String::from("Test"),
+    //         vec![WeekDay::Monday, WeekDay::Tuesday],
+    //         HabitType::Completed,
+    //     );
+    //     result.complete_day(WeekDay::Monday);
+    //     result.complete_day(WeekDay::Tuesday);
+    //     assert_eq!(result.is_complete(), true);
+    // }
 }

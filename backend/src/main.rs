@@ -52,7 +52,7 @@ async fn main() {
 
     // build our application with some routes
     let app = Router::new()
-        .route("/api", get(root::get).post(root::post))
+        .route("/api/habits", get(root::get).post(root::post))
         .with_state(pool);
 
     // run it with hyper
