@@ -52,11 +52,11 @@ async fn main() {
 
     // build our application with some routes
     let app = Router::new()
-        .route("/", get(root::get).post(root::post))
+        .route("/api", get(root::get).post(root::post))
         .with_state(pool);
 
     // run it with hyper
-    let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
+    let listener = TcpListener::bind("127.0.0.1:4000").await.unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 }
