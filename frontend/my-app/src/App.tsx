@@ -7,7 +7,7 @@ function App() {
   const [state, setState] = useState("El blanco vido...")
 
   useEffect(() => {
-    const url = "/api";
+    const url = "/api/habits";
 
     const fetchData = async () => {
       try {
