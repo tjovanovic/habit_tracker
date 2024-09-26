@@ -51,9 +51,11 @@ async fn main() {
         .expect("can't connect to database");
 
     // build our application with some routes
-    let app = Router::new()
-        .route("/api/habits", get(root::get).post(root::post))
+    let api_routes = Router::new()
+        .route("/habits", get(root::get).post(root::post))
         .with_state(pool);
+
+    let app = Router::new().nest("/api", api_routes);
 
     // run it with hyper
     let listener = TcpListener::bind("127.0.0.1:4000").await.unwrap();

@@ -20,23 +20,23 @@ pub async fn post(
     Query(params): Query<HashMap<String, String>>,
     body: String,
 ) -> Result<String, (StatusCode, String)> {
-    let result = Habit::new(
-        String::from("Test"),
-        vec![WeekDay::Monday, WeekDay::Tuesday],
-        HabitType::O,
-    );
-    println!("{}", body);
-    for (key, val) in params.into_iter() {
-        println!("{} / {}", key, val);
-    }
-    sqlx::query("insert into habits (name) values ($1)")
-        .bind(result.name)
-        .execute(&pool)
-        .await
-        .map(|_s| String::from("Ok"))
-        .map_err(internal_error)
+    // let result = Habit::new(
+    //     String::from("Test"),
+    //     vec![WeekDay::Monday, WeekDay::Tuesday],
+    //     HabitType::O,
+    // );
+    // println!("{}", body);
+    // for (key, val) in params.into_iter() {
+    //     println!("{} / {}", key, val);
+    // }
+    // sqlx::query("insert into habits (name) values ($1)")
+    //     .bind(result.name)
+    //     .execute(&pool)
+    //     .await
+    //     .map(|_s| String::from("Ok"))
+    //     .map_err(internal_error)
 
-    // Ok(String::from("Accepted"))
+    Ok(String::from("Accepted"))
 }
 
 /// Utility function for mapping any error into a `500 Internal Server Error`
