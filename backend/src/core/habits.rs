@@ -1,5 +1,8 @@
+use super::users::UserId;
+use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 
+#[derive(Deserialize, Serialize)]
 pub struct Habit {
     pub id: HabitId,
     pub name: String,
@@ -7,14 +10,14 @@ pub struct Habit {
     completed_week_days: Vec<WeekDay>,
     pub habit_type: HabitType,
     pub category: String,
-    pub user_id: UserId,
     priority: Priority,
+    pub user_id: UserId,
 }
 
-struct HabitId(u64);
-struct UserId(u64);
+#[derive(Deserialize, Serialize)]
+pub struct HabitId(u64);
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Deserialize, Serialize)]
 pub enum WeekDay {
     Monday,
     Tuesday,
@@ -25,6 +28,7 @@ pub enum WeekDay {
     Sunday,
 }
 
+#[derive(Deserialize, Serialize)]
 pub enum Priority {
     P1,
     P2,
@@ -33,6 +37,7 @@ pub enum Priority {
     P5,
 }
 
+#[derive(Deserialize, Serialize)]
 pub enum HabitType {
     // Habit that can be either done or not
     OneOff,

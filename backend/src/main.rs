@@ -1,33 +1,14 @@
-//! Example of application using <https://github.com/launchbadge/sqlx>
-//!
-//! Run with
-//!
-//! ```not_rust
-//! cargo run -p example-sqlx-postgres
-//! ```
-//!
-//! Test with curl:
-//!
-//! ```not_rust
-//! curl 127.0.0.1:3000
-//! curl -X POST 127.0.0.1:3000
-//! ```
+#![allow(unused)]
 
-use axum::{
-    async_trait,
-    extract::{FromRef, FromRequestParts},
-    http::{request::Parts, StatusCode},
-    routing::get,
-    Router,
-};
-use sqlx::postgres::{PgPool, PgPoolOptions};
+use axum::{routing::get, Router};
+use sqlx::postgres::PgPoolOptions;
 use std::time::Duration;
 use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub mod core;
 pub mod routes;
-use routes::root;
+use routes::habits;
 
 #[tokio::main]
 async fn main() {
@@ -52,7 +33,7 @@ async fn main() {
 
     // build our application with some routes
     let api_routes = Router::new()
-        .route("/habits", get(root::get).post(root::post))
+        .route("/habits", get(habits::get).post(habits::post))
         .with_state(pool);
 
     let app = Router::new().nest("/api", api_routes);

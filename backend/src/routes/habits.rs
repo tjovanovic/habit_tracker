@@ -1,11 +1,12 @@
 use axum::{
-    extract::{Query, State},
+    extract::{Json, State},
     http::StatusCode,
 };
+use serde_json::Value;
 use sqlx::postgres::PgPool;
 use std::collections::HashMap;
 
-use crate::core::habits::{Habit, HabitType, WeekDay};
+use crate::core::habits::Habit;
 
 // we can extract the connection pool with `State`
 pub async fn get(State(pool): State<PgPool>) -> Result<String, (StatusCode, String)> {
@@ -15,26 +16,28 @@ pub async fn get(State(pool): State<PgPool>) -> Result<String, (StatusCode, Stri
         .map_err(internal_error)
 }
 
+
+struct HabitRequest {
+
+}
+
 pub async fn post(
     State(pool): State<PgPool>,
-    Query(params): Query<HashMap<String, String>>,
-    body: String,
+    Json(payload): Json<Value>,
 ) -> Result<String, (StatusCode, String)> {
-    // let result = Habit::new(
-    //     String::from("Test"),
-    //     vec![WeekDay::Monday, WeekDay::Tuesday],
-    //     HabitType::O,
-    // );
-    // println!("{}", body);
-    // for (key, val) in params.into_iter() {
-    //     println!("{} / {}", key, val);
-    // }
-    // sqlx::query("insert into habits (name) values ($1)")
-    //     .bind(result.name)
-    //     .execute(&pool)
-    //     .await
-    //     .map(|_s| String::from("Ok"))
-    //     .map_err(internal_error)
+    println!("Payload: {}", payload);
+    let h: Habit = serde_json::from_value(payload).map_err(internal_error)?;
+
+    // println!("Habit: {}", h);
+
+    sqlx::query("insert into habits (name) values ($1)")
+        .bind(result.name)
+        .execute(&pool)
+        .await
+        .map(|_s| String::from("Ok"))
+        .map_err(internal_error)
+
+    // Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("Test")))
 
     Ok(String::from("Accepted"))
 }
