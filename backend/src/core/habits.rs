@@ -2,7 +2,7 @@ use super::users::UserId;
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Habit {
     pub id: HabitId,
     pub name: String,
@@ -11,13 +11,13 @@ pub struct Habit {
     pub habit_type: HabitType,
     pub category: String,
     priority: Priority,
-    pub user_id: UserId,
+    user_id: UserId,
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct HabitId(u64);
+#[derive(Deserialize, Serialize, Debug)]
+pub struct HabitId(pub i64);
 
-#[derive(PartialEq, Deserialize, Serialize)]
+#[derive(PartialEq, Deserialize, Serialize, Debug)]
 pub enum WeekDay {
     Monday,
     Tuesday,
@@ -28,7 +28,7 @@ pub enum WeekDay {
     Sunday,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub enum Priority {
     P1,
     P2,
@@ -37,7 +37,7 @@ pub enum Priority {
     P5,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub enum HabitType {
     // Habit that can be either done or not
     OneOff,
@@ -51,6 +51,7 @@ impl Habit {
         id: HabitId,
         name: String,
         desired_week_days: Vec<WeekDay>,
+        completed_week_days: Option<Vec<WeekDay>>,
         habit_type: HabitType,
         category: String,
         priority: Priority,
@@ -60,7 +61,10 @@ impl Habit {
             id,
             name,
             desired_week_days,
-            completed_week_days: Vec::new(),
+            completed_week_days: match completed_week_days {
+                None => Vec::new(),
+                Some(x) => x,
+            },
             habit_type,
             category,
             user_id,
@@ -85,7 +89,6 @@ impl Habit {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     // #[test]
     // fn test_init() {

@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
-pub struct UserId(u64);
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UserId(pub u64);
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct User {
     id: UserId,
     name: String,

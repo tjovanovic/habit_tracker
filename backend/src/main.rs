@@ -9,6 +9,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 pub mod core;
 pub mod routes;
 use routes::habits;
+use routes::state::App;
 
 #[tokio::main]
 async fn main() {
@@ -31,10 +32,12 @@ async fn main() {
         .await
         .expect("can't connect to database");
 
+    let state = App::new(pool);
+
     // build our application with some routes
     let api_routes = Router::new()
         .route("/habits", get(habits::get).post(habits::post))
-        .with_state(pool);
+        .with_state(state);
 
     let app = Router::new().nest("/api", api_routes);
 
