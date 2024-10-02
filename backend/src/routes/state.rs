@@ -30,7 +30,7 @@ pub struct App {
 // }
 
 pub fn from_row(row: PgRow) -> Result<Habit, sqlx::Error> {
-    let id: i64 = row.try_get("id")?;
+    let id: i32 = row.try_get("id")?;
     let id = HabitId(id);
     let name = row.try_get("name")?;
     // let desired_week_days = row.try_get("desired_week_days")?;
@@ -41,7 +41,7 @@ pub fn from_row(row: PgRow) -> Result<Habit, sqlx::Error> {
         Vec::new(),
         // desired_week_days,
         None,
-        HabitType::OneOff,
+        HabitType::Length(1, 2, 3),
         String::from("lel"),
         habits::Priority::P1,
         UserId(43),
@@ -53,15 +53,14 @@ impl App {
         App { pg_pool }
     }
 
-    pub async fn get_habit(&self, id: HabitId) -> Result<Habit, String> {
+    pub async fn get_habit(&self, id: HabitId) -> Result<Habit, sqlx::Error> {
         let HabitId(id) = id;
-        let result = sqlx::query("select from habits where id = $1")
+        let result = sqlx::query_as::<Postgres, Habit>("select * from habits where id = $1")
             .bind(id)
-            .map(from_row)
             .fetch_one(&self.pg_pool)
-            .await
-            .map_err(|_| String::from("xd"))?
-            .map_err(|_| String::from("xd"))?;
+            .await;
+
+        result
 
         // let result = match result {
         //     Err(_e) => {
@@ -75,7 +74,6 @@ impl App {
         // .map(|_s| String::from("Ok"))
         // .map_err(internal_error);
         // None
-        Err(String::from("wtf"))
     }
 
     pub fn create_habit(&self, req: HabitPostRequest) -> () {}

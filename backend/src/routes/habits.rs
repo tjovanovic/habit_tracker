@@ -12,7 +12,7 @@ use crate::routes::state::App;
 
 #[derive(Deserialize, Debug)]
 pub struct HabitGetRequest {
-    pub habit_id: HabitId,
+    pub id: HabitId,
 }
 // we can extract the connection pool with `State`
 pub async fn get(
@@ -20,11 +20,16 @@ pub async fn get(
     Json(payload): Json<Value>,
 ) -> Result<String, (StatusCode, String)> {
     let request: HabitGetRequest = serde_json::from_value(payload).map_err(internal_error)?;
-    // app.get
-    // sqlx::query_scalar("select 'hello world from pg'")
-    //     .fetch_one(&state.pg_pool)
-    //     .await
-    //     .map_err(internal_error)
+    let mut h = app.get_habit(request.id).await.map_err(internal_error)?;
+    println!("Habit: {:#?}", h);
+
+    // h.habit_type = Some(HabitType::Length(1, 2, 3));
+    h.habit_type = Some(HabitType::OneOff);
+
+    let x = serde_json::to_string(&h.habit_type).map_err(internal_error)?;
+
+    println!("HabitType: {}", x);
+
     Ok(String::from("Temporary"))
 }
 

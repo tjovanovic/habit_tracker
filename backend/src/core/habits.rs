@@ -1,23 +1,32 @@
 use super::users::UserId;
-use serde::{Deserialize, Serialize};
+use serde::{de::MapAccess, de::Visitor, Deserialize, Deserializer, Serialize};
+use serde_json::json;
+use sqlx::encode::IsNull;
+use sqlx::error::BoxDynError;
+use sqlx::postgres::{PgArgumentBuffer, PgRow, PgTypeInfo, PgTypeKind, PgValueRef};
+use sqlx::{Decode, Encode, Postgres};
+use std::error::Error;
+use std::fmt;
+use std::ops::Deref;
 use std::vec::Vec;
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Habit {
     pub id: HabitId,
     pub name: String,
-    pub desired_week_days: Vec<WeekDay>,
-    completed_week_days: Vec<WeekDay>,
-    pub habit_type: HabitType,
-    pub category: String,
-    priority: Priority,
-    user_id: UserId,
+    pub desired_week_days: Option<Vec<WeekDay>>,
+    completed_week_days: Option<Vec<WeekDay>>,
+    pub habit_type: Option<HabitType>,
+    pub category: Option<String>,
+    priority: Option<Priority>,
+    user_id: Option<UserId>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct HabitId(pub i64);
+#[derive(Deserialize, Serialize, Debug, sqlx::Type)]
+#[sqlx(transparent)]
+pub struct HabitId(pub i32);
 
-#[derive(PartialEq, Deserialize, Serialize, Debug)]
+#[derive(PartialEq, Deserialize, Serialize, Debug, sqlx::Type)]
 pub enum WeekDay {
     Monday,
     Tuesday,
@@ -28,7 +37,7 @@ pub enum WeekDay {
     Sunday,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, sqlx::Type)]
 pub enum Priority {
     P1,
     P2,
@@ -37,13 +46,41 @@ pub enum Priority {
     P5,
 }
 
+// impl<'r> Decode<'r, Postgres> for Priority {
+//     fn decode(value: PgValueRef<'r>) -> Result<Self, Box<dyn Error + 'static + Send + Sync>> {
+//         Ok(Priority::P1)
+//     }
+// }
+
 #[derive(Deserialize, Serialize, Debug)]
+#[serde(tag = "type", content = "content", rename_all = "snake_case")]
 pub enum HabitType {
     // Habit that can be either done or not
     OneOff,
 
     // Habit based on length
     Length(u16, u16, u16),
+}
+
+impl sqlx::Type<Postgres> for HabitType {
+    fn type_info() -> PgTypeInfo {
+        PgTypeInfo::with_name("json")
+    }
+}
+
+impl<'r> Decode<'r, Postgres> for HabitType {
+    fn decode(value: PgValueRef<'r>) -> Result<Self, Box<dyn Error + 'static + Send + Sync>> {
+        let value = value.as_str()?;
+        let habit_type = serde_json::from_str::<HabitType>(value)?;
+        Ok(habit_type)
+    }
+}
+
+impl Encode<'_, Postgres> for HabitType {
+    fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let x = serde_json::to_writer(&mut **buf, self)?;
+        Ok(IsNull::No)
+    }
 }
 
 impl Habit {
@@ -60,31 +97,32 @@ impl Habit {
         Habit {
             id,
             name,
-            desired_week_days,
-            completed_week_days: match completed_week_days {
-                None => Vec::new(),
-                Some(x) => x,
-            },
-            habit_type,
-            category,
-            user_id,
-            priority,
+            desired_week_days: Some(desired_week_days),
+            completed_week_days,
+            // completed_week_days: match completed_week_days {
+            //     None => Vec::new(),
+            //     Some(x) => x,
+            // },
+            habit_type: Some(habit_type),
+            category: Some(category),
+            user_id: Some(user_id),
+            priority: Some(priority),
         }
     }
 
-    pub fn times_per_week(&self) -> usize {
-        return self.desired_week_days.len();
-    }
+    // pub fn times_per_week(&self) -> usize {
+    //     return self.desired_week_days.len();
+    // }
 
-    pub fn complete_day(&mut self, day: WeekDay) -> () {
-        if !self.completed_week_days.contains(&day) {
-            self.completed_week_days.push(day);
-        }
-    }
+    // pub fn complete_day(&mut self, day: WeekDay) -> () {
+    //     if !self.completed_week_days.contains(&day) {
+    //         self.completed_week_days.push(day);
+    //     }
+    // }
 
-    pub fn is_complete(&self) -> bool {
-        self.completed_week_days.len() <= self.desired_week_days.len()
-    }
+    // pub fn is_complete(&self) -> bool {
+    //     self.completed_week_days.len() <= self.desired_week_days.len()
+    // }
 }
 
 #[cfg(test)]
