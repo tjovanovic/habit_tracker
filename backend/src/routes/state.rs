@@ -14,40 +14,6 @@ pub struct App {
     pg_pool: Pool<Postgres>,
 }
 
-// impl<'r> sqlx::FromRow<'r, PgRow> for Habit {
-//     fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
-//         let author_id = row.try_get("author_id")?;
-//         let name = row.try_get("name")?;
-//         let dob = row.try_get("dob")?;
-//         // let books: Json<_> = row.try_get("books")?;
-//         Ok(Author {
-//             author_id,
-//             name,
-//             dob,
-//             books: books.0,
-//         })
-//     }
-// }
-
-pub fn from_row(row: PgRow) -> Result<Habit, sqlx::Error> {
-    let id: i32 = row.try_get("id")?;
-    let id = HabitId(id);
-    let name = row.try_get("name")?;
-    // let desired_week_days = row.try_get("desired_week_days")?;
-    // let books: Json<_> = row.try_get("books")?;
-    Ok(Habit::new(
-        id,
-        name,
-        Vec::new(),
-        // desired_week_days,
-        None,
-        HabitType::Length(1, 2, 3),
-        String::from("lel"),
-        habits::Priority::P1,
-        UserId(43),
-    ))
-}
-
 impl App {
     pub fn new(pg_pool: Pool<Postgres>) -> Self {
         App { pg_pool }
@@ -61,20 +27,32 @@ impl App {
             .await;
 
         result
-
-        // let result = match result {
-        //     Err(_e) => {
-        //         return None;
-        //     }
-        //     Ok(row) => row,
-        // };
-
-        // let result: Habit = result.try_into()?;
-
-        // .map(|_s| String::from("Ok"))
-        // .map_err(internal_error);
-        // None
     }
 
-    pub fn create_habit(&self, req: HabitPostRequest) -> () {}
+    pub async fn create_habit(&self, habit: Habit) -> Result<String, sqlx::Error> {
+        sqlx::query(
+            "
+            insert into habits (
+                id,
+                name,
+                desired_week_days,
+                completed_week_days,
+                habit_type,
+                category,
+                priority,
+                user_id
+            ) values ($1, $2, $3, $4, $5, $6, $7, $8)",
+        )
+        .bind(habit.id)
+        .bind(habit.name)
+        .bind(habit.desired_week_days)
+        .bind(habit.completed_week_days)
+        .bind(habit.habit_type)
+        .bind(habit.category)
+        .bind(habit.priority)
+        .bind(habit.user_id)
+        .execute(&self.pg_pool)
+        .await
+        .map(|_| String::from("Ok"))
+    }
 }

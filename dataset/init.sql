@@ -8,10 +8,10 @@ create table users (
 create table habits (
     id integer primary key,
     name varchar,
-    desired_week_days json,
-    completed_week_days json default null,
+    desired_week_days varchar[],
+    completed_week_days varchar[],
     habit_type json,
     category varchar,
-    priority smallint,
+    priority varchar,
     user_id integer references users(id)
 );
