@@ -1,13 +1,10 @@
 use super::users::UserId;
-use serde::{de::MapAccess, de::Visitor, Deserialize, Deserializer, Serialize};
-use serde_json::json;
+use serde::{Deserialize, Serialize};
 use sqlx::encode::IsNull;
 use sqlx::error::BoxDynError;
-use sqlx::postgres::{PgArgumentBuffer, PgRow, PgTypeInfo, PgTypeKind, PgValueRef};
+use sqlx::postgres::{PgArgumentBuffer, PgTypeInfo, PgValueRef};
 use sqlx::{Decode, Encode, Postgres};
 use std::error::Error;
-use std::fmt;
-use std::ops::Deref;
 use std::vec::Vec;
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -75,7 +72,7 @@ impl<'r> Decode<'r, Postgres> for HabitType {
 
 impl Encode<'_, Postgres> for HabitType {
     fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let x = serde_json::to_writer(&mut **buf, self)?;
+        serde_json::to_writer(&mut **buf, self)?;
         Ok(IsNull::No)
     }
 }

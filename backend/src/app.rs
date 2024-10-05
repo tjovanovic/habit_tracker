@@ -1,13 +1,10 @@
-use std::borrow::Borrow;
-use std::io;
+use sqlx::{Pool, Postgres};
 
-use sqlx::postgres::PgRow;
-use sqlx::types::Json;
-use sqlx::{FromRow, Pool, Postgres, Row};
-
-use super::habits::HabitPostRequest;
-use crate::core::habits::{self, Habit, HabitId, HabitType};
-use crate::core::users::UserId;
+use crate::core::habits::{Habit, HabitId};
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 
 #[derive(Clone)]
 pub struct App {
@@ -54,5 +51,36 @@ impl App {
         .execute(&self.pg_pool)
         .await
         .map(|_| String::from("Ok"))
+    }
+}
+
+pub struct MyError {
+    status_code: StatusCode,
+    message: String,
+}
+
+impl From<sqlx::Error> for MyError {
+    fn from(err: sqlx::Error) -> Self {
+        println!("Error: {}", err.to_string());
+        Self {
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
+            message: err.to_string(),
+        }
+    }
+}
+
+impl From<serde_json::Error> for MyError {
+    fn from(err: serde_json::Error) -> Self {
+        println!("Error: {}", err.to_string());
+        Self {
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
+            message: err.to_string(),
+        }
+    }
+}
+
+impl IntoResponse for MyError {
+    fn into_response(self) -> Response {
+        (self.status_code, self.message).into_response()
     }
 }

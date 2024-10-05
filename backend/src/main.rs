@@ -1,4 +1,4 @@
-#![allow(unused)]
+// #![allow(unused)]
 
 use axum::{routing::get, Router};
 use sqlx::postgres::PgPoolOptions;
@@ -6,10 +6,11 @@ use std::time::Duration;
 use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+pub mod app;
 pub mod core;
 pub mod routes;
+use app::App;
 use routes::habits;
-use routes::state::App;
 
 #[tokio::main]
 async fn main() {

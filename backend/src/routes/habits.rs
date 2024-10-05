@@ -1,16 +1,10 @@
-use axum::{
-    extract::{Json, State},
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
-use serde::{Deserialize, Serialize};
+use axum::extract::{Json, State};
+use serde::Deserialize;
 use serde_json::Value;
-use sqlx::postgres::PgPool;
-use std::collections::HashMap;
 
+use crate::app::{App, MyError};
 use crate::core::habits::{Habit, HabitId, HabitType, Priority, WeekDay};
 use crate::core::users::UserId;
-use crate::routes::state::App;
 
 #[derive(Deserialize, Debug)]
 pub struct HabitGetRequest {
@@ -49,35 +43,4 @@ pub async fn post(State(state): State<App>, Json(payload): Json<Value>) -> Resul
     );
 
     state.create_habit(habit).await.map_err(|err| err.into())
-}
-
-pub struct MyError {
-    status_code: StatusCode,
-    message: String,
-}
-
-impl From<sqlx::Error> for MyError {
-    fn from(err: sqlx::Error) -> Self {
-        println!("Error: {}", err.to_string());
-        Self {
-            status_code: StatusCode::INTERNAL_SERVER_ERROR,
-            message: err.to_string(),
-        }
-    }
-}
-
-impl From<serde_json::Error> for MyError {
-    fn from(err: serde_json::Error) -> Self {
-        println!("Error: {}", err.to_string());
-        Self {
-            status_code: StatusCode::INTERNAL_SERVER_ERROR,
-            message: err.to_string(),
-        }
-    }
-}
-
-impl IntoResponse for MyError {
-    fn into_response(self) -> Response {
-        (self.status_code, self.message).into_response()
-    }
 }
