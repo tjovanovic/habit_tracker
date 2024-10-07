@@ -3,8 +3,7 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use crate::app::{App, MyError};
-use crate::core::habits::{Habit, HabitId, HabitType, Priority, WeekDay};
-use crate::core::users::UserId;
+use crate::core::habits::{HabitId, HabitType, Priority, WeekDay};
 
 #[derive(Deserialize, Debug)]
 pub struct HabitGetRequest {
@@ -30,17 +29,9 @@ pub async fn post(State(state): State<App>, Json(payload): Json<Value>) -> Resul
     println!("Payload: {}", payload);
     let request: HabitPostRequest = serde_json::from_value(payload)?;
     println!("Request: {:#?}", request);
+    state.create_habit(request).await.map_err(|err| err.into())
+}
 
-    let habit = Habit::new(
-        HabitId(2),
-        request.name,
-        Vec::new(),
-        Vec::new(),
-        request.habit_type,
-        request.category,
-        request.priority,
-        UserId(1),
-    );
+trait Blabla<&T> {
 
-    state.create_habit(habit).await.map_err(|err| err.into())
 }

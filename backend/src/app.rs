@@ -1,6 +1,10 @@
-use sqlx::{Pool, Postgres};
+use sqlx::{Pool, Postgres, Row};
 
-use crate::core::habits::{Habit, HabitId};
+use crate::{
+    core::habits::{Habit, HabitId},
+    core::users::UserId,
+    routes::habits::HabitPostRequest,
+};
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -26,7 +30,21 @@ impl App {
         result
     }
 
-    pub async fn create_habit(&self, habit: Habit) -> Result<String, sqlx::Error> {
+    pub async fn create_habit(&self, request: HabitPostRequest) -> Result<String, sqlx::Error> {
+        let next_habit_id = self.get_next_habit_id().await?;
+        let user_id = self.get_user_id().await?;
+
+        let habit = Habit::new(
+            next_habit_id,
+            request.name,
+            Vec::new(),
+            Vec::new(),
+            request.habit_type,
+            request.category,
+            request.priority,
+            user_id,
+        );
+
         sqlx::query(
             "
             insert into habits (
@@ -51,6 +69,20 @@ impl App {
         .execute(&self.pg_pool)
         .await
         .map(|_| String::from("Ok"))
+    }
+
+    async fn get_next_habit_id(&self) -> Result<HabitId, sqlx::Error> {
+        let row =
+            sqlx::query("select nextval(pg_get_serial_sequence('habits', 'id'))::int4 as new_id")
+                .fetch_one(&self.pg_pool)
+                .await?;
+
+        let id = row.try_get("new_id")?;
+        Ok(HabitId(id))
+    }
+
+    async fn get_user_id(&self) -> Result<UserId, sqlx::Error> {
+        Ok(UserId(1))
     }
 }
 

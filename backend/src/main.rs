@@ -1,5 +1,3 @@
-// #![allow(unused)]
-
 use axum::{routing::get, Router};
 use sqlx::postgres::PgPoolOptions;
 use std::time::Duration;
@@ -11,6 +9,15 @@ pub mod core;
 pub mod routes;
 use app::App;
 use routes::habits;
+
+struct Blabla<'a, T> {
+    x: &'a T,
+}
+
+struct F<T>;
+trait X<T> {}
+
+impl<T> X<&T> for F<&T> {}
 
 #[tokio::main]
 async fn main() {
